@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignalSync - Real-time Signal Monitor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>SignalSync</h1>
+            <div class="status" id="connectionStatus">Disconnected</div>
+        </header>
+
+        <main>
+            <section class="controls">
+                <button id="connectBtn">Connect</button>
+                <button id="disconnectBtn" disabled>Disconnect</button>
+            </section>
+
+            <section class="signals">
+                <h2>Active Signals</h2>
+                <div id="signalList" class="signal-grid">
+                    <!-- signals will appear here -->
+                </div>
+            </section>
+
+            <section class="logs">
+                <h3>Connection Log</h3>
+                <div id="logArea" class="log-container"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="client.js"></script>
+</body>
+</html>
