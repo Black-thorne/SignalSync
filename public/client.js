@@ -2,11 +2,13 @@ class SignalSyncClient {
     constructor() {
         this.ws = null;
         this.isConnected = false;
+        this.signals = new Map();
 
         this.connectBtn = document.getElementById('connectBtn');
         this.disconnectBtn = document.getElementById('disconnectBtn');
         this.statusEl = document.getElementById('connectionStatus');
         this.logArea = document.getElementById('logArea');
+        this.signalList = document.getElementById('signalList');
 
         this.initEventListeners();
     }
@@ -61,7 +63,58 @@ class SignalSyncClient {
     }
 
     handleMessage(data) {
-        this.log(`Received: ${data.type} - ${data.message || JSON.stringify(data)}`);
+        switch (data.type) {
+            case 'welcome':
+                this.log(`Server: ${data.message}`);
+                break;
+            case 'initial_signals':
+                this.log(`Loaded ${data.signals.length} signals`);
+                data.signals.forEach(signal => this.updateSignalDisplay(signal));
+                break;
+            case 'signal_update':
+                this.updateSignalDisplay(data.signal);
+                break;
+            default:
+                this.log(`Unknown message type: ${data.type}`);
+        }
+    }
+
+    updateSignalDisplay(signal) {
+        this.signals.set(signal.id, signal);
+
+        let signalEl = document.getElementById(`signal-${signal.id}`);
+        if (!signalEl) {
+            signalEl = this.createSignalElement(signal);
+            this.signalList.appendChild(signalEl);
+        }
+
+        const valueEl = signalEl.querySelector('.signal-value');
+        const timestampEl = signalEl.querySelector('.signal-timestamp');
+
+        valueEl.textContent = `${Math.round(signal.value * 100) / 100} ${signal.unit}`;
+        timestampEl.textContent = new Date(signal.lastUpdated).toLocaleTimeString();
+
+        signalEl.classList.add('updated');
+        setTimeout(() => signalEl.classList.remove('updated'), 500);
+    }
+
+    createSignalElement(signal) {
+        const div = document.createElement('div');
+        div.id = `signal-${signal.id}`;
+        div.className = 'signal-card';
+
+        div.innerHTML = `
+            <div class="signal-header">
+                <h4 class="signal-name">${signal.name}</h4>
+                <span class="signal-type">${signal.type || 'metric'}</span>
+            </div>
+            <div class="signal-body">
+                <div class="signal-value">-- ${signal.unit}</div>
+                <div class="signal-timestamp">--:--:--</div>
+            </div>
+        `;
+
+        return div;
     }
 
     disconnect() {
