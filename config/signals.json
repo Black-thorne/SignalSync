@@ -1,0 +1,89 @@
+{
+  "signals": {
+    "system": {
+      "cpu_usage": {
+        "name": "CPU Usage",
+        "type": "percentage",
+        "unit": "%",
+        "enabled": true,
+        "updateInterval": 3000,
+        "thresholds": {
+          "warning": 70,
+          "critical": 90
+        }
+      },
+      "memory_usage": {
+        "name": "Memory Usage",
+        "type": "percentage",
+        "unit": "%",
+        "enabled": true,
+        "updateInterval": 4000,
+        "thresholds": {
+          "warning": 80,
+          "critical": 95
+        }
+      },
+      "disk_usage": {
+        "name": "Disk Usage",
+        "type": "percentage",
+        "unit": "%",
+        "enabled": false,
+        "updateInterval": 10000,
+        "thresholds": {
+          "warning": 85,
+          "critical": 95
+        }
+      }
+    },
+    "network": {
+      "network_rx": {
+        "name": "Network RX",
+        "type": "throughput",
+        "unit": "MB/s",
+        "enabled": true,
+        "updateInterval": 2500,
+        "thresholds": {
+          "warning": 80,
+          "critical": 95
+        }
+      },
+      "network_tx": {
+        "name": "Network TX",
+        "type": "throughput",
+        "unit": "MB/s",
+        "enabled": false,
+        "updateInterval": 2500,
+        "thresholds": {
+          "warning": 80,
+          "critical": 95
+        }
+      }
+    },
+    "application": {
+      "response_time": {
+        "name": "Response Time",
+        "type": "latency",
+        "unit": "ms",
+        "enabled": true,
+        "updateInterval": 5000,
+        "thresholds": {
+          "warning": 500,
+          "critical": 1000
+        }
+      },
+      "active_connections": {
+        "name": "Active Connections",
+        "type": "counter",
+        "unit": "",
+        "enabled": false,
+        "updateInterval": 3000,
+        "thresholds": {
+          "warning": 100,
+          "critical": 150
+        }
+      }
+    }
+  },
+  "refreshRate": 2000,
+  "maxHistory": 100
+}

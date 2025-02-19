@@ -17,6 +17,20 @@
             <section class="controls">
                 <button id="connectBtn">Connect</button>
                 <button id="disconnectBtn" disabled>Disconnect</button>
+
+                <div class="filters">
+                    <label>Filter by type:</label>
+                    <select id="typeFilter">
+                        <option value="all">All Types</option>
+                        <option value="percentage">Percentage</option>
+                        <option value="throughput">Throughput</option>
+                        <option value="latency">Latency</option>
+                        <option value="counter">Counter</option>
+                    </select>
+
+                    <label>Search:</label>
+                    <input type="text" id="searchFilter" placeholder="Signal name...">
+                </div>
             </section>
 
             <section class="signals">

@@ -1,45 +1,61 @@
+const fs = require('fs');
+const path = require('path');
+
 class SignalManager {
     constructor() {
         this.signals = new Map();
         this.subscribers = new Set();
-        this.interval = null;
+        this.intervals = new Map();
+        this.config = this.loadConfig();
 
-        this.initializeMockSignals();
+        this.initializeSignalsFromConfig();
     }
 
-    initializeMockSignals() {
-        this.addSignal('cpu_usage', {
-            name: 'CPU Usage',
-            type: 'percentage',
-            unit: '%',
-            value: 0,
-            lastUpdated: new Date()
-        });
+    loadConfig() {
+        try {
+            const configPath = path.join(__dirname, 'config', 'signals.json');
+            const configData = fs.readFileSync(configPath, 'utf8');
+            return JSON.parse(configData);
+        } catch (error) {
+            console.error('Error loading config, using defaults:', error.message);
+            return this.getDefaultConfig();
+        }
+    }
 
-        this.addSignal('memory_usage', {
-            name: 'Memory Usage',
-            type: 'percentage',
-            unit: '%',
-            value: 0,
-            lastUpdated: new Date()
-        });
+    getDefaultConfig() {
+        return {
+            signals: {
+                system: {
+                    cpu_usage: {
+                        name: 'CPU Usage',
+                        type: 'percentage',
+                        unit: '%',
+                        enabled: true,
+                        updateInterval: 3000,
+                        thresholds: { warning: 70, critical: 90 }
+                    }
+                }
+            },
+            refreshRate: 2000,
+            maxHistory: 100
+        };
+    }
 
-        this.addSignal('network_rx', {
-            name: 'Network RX',
-            type: 'throughput',
-            unit: 'MB/s',
-            value: 0,
-            lastUpdated: new Date()
-        });
-
-        this.addSignal('response_time', {
-            name: 'Response Time',
-            type: 'latency',
-            unit: 'ms',
-            value: 0,
-            lastUpdated: new Date()
+    initializeSignalsFromConfig() {
+        Object.entries(this.config.signals).forEach(([category, signals]) => {
+            Object.entries(signals).forEach(([id, config]) => {
+                if (config.enabled) {
+                    this.addSignal(id, {
+                        ...config,
+                        category,
+                        value: 0,
+                        lastUpdated: new Date()
+                    });
+                }
+            });
         });
     }
+
 
     addSignal(id, config) {
         this.signals.set(id, {
@@ -60,7 +76,7 @@ class SignalManager {
                 timestamp: new Date()
             });
 
-            if (signal.history.length > 100) {
+            if (signal.history.length > this.config.maxHistory) {
                 signal.history.shift();
             }
 
@@ -106,21 +122,36 @@ class SignalManager {
     }
 
     startMockUpdates() {
-        if (this.interval) return;
+        this.signals.forEach((signal, id) => {
+            if (!this.intervals.has(id)) {
+                const interval = setInterval(() => {
+                    let value;
+                    switch (signal.type) {
+                        case 'percentage':
+                            value = Math.random() * 100;
+                            break;
+                        case 'throughput':
+                            value = Math.random() * 100;
+                            break;
+                        case 'latency':
+                            value = 50 + Math.random() * 500;
+                            break;
+                        default:
+                            value = Math.random() * 100;
+                    }
+                    this.updateSignal(id, value);
+                }, signal.updateInterval || this.config.refreshRate);
 
-        this.interval = setInterval(() => {
-            this.updateSignal('cpu_usage', Math.random() * 100);
-            this.updateSignal('memory_usage', 30 + Math.random() * 40);
-            this.updateSignal('network_rx', Math.random() * 50);
-            this.updateSignal('response_time', 50 + Math.random() * 200);
-        }, 2000 + Math.random() * 3000);
+                this.intervals.set(id, interval);
+            }
+        });
     }
 
     stopMockUpdates() {
-        if (this.interval) {
-            clearInterval(this.interval);
-            this.interval = null;
-        }
+        this.intervals.forEach((interval) => {
+            clearInterval(interval);
+        });
+        this.intervals.clear();
     }
 }
 

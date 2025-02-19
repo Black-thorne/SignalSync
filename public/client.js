@@ -9,6 +9,8 @@ class SignalSyncClient {
         this.statusEl = document.getElementById('connectionStatus');
         this.logArea = document.getElementById('logArea');
         this.signalList = document.getElementById('signalList');
+        this.typeFilter = document.getElementById('typeFilter');
+        this.searchFilter = document.getElementById('searchFilter');
 
         this.initEventListeners();
     }
@@ -16,6 +18,8 @@ class SignalSyncClient {
     initEventListeners() {
         this.connectBtn.addEventListener('click', () => this.connect());
         this.disconnectBtn.addEventListener('click', () => this.disconnect());
+        this.typeFilter.addEventListener('change', () => this.applyFilters());
+        this.searchFilter.addEventListener('input', () => this.applyFilters());
     }
 
     connect() {
@@ -139,6 +143,28 @@ class SignalSyncClient {
 
         this.logArea.appendChild(entry);
         this.logArea.scrollTop = this.logArea.scrollHeight;
+    }
+
+    applyFilters() {
+        const typeFilter = this.typeFilter.value;
+        const searchTerm = this.searchFilter.value.toLowerCase();
+
+        this.signals.forEach((signal, id) => {
+            const signalEl = document.getElementById(`signal-${id}`);
+            if (!signalEl) return;
+
+            const matchesType = typeFilter === 'all' || signal.type === typeFilter;
+            const matchesSearch = !searchTerm || signal.name.toLowerCase().includes(searchTerm);
+
+            if (matchesType && matchesSearch) {
+                signalEl.style.display = 'block';
+            } else {
+                signalEl.style.display = 'none';
+            }
+        });
+
+        const visibleCount = Array.from(this.signalList.children).filter(el => el.style.display !== 'none').length;
+        this.log(`Filtered signals: ${visibleCount} of ${this.signals.size} visible`);
     }
 }
 
