@@ -11,6 +11,8 @@ class SignalSyncClient {
         this.signalList = document.getElementById('signalList');
         this.typeFilter = document.getElementById('typeFilter');
         this.searchFilter = document.getElementById('searchFilter');
+        this.exportJsonBtn = document.getElementById('exportJson');
+        this.exportCsvBtn = document.getElementById('exportCsv');
 
         this.initEventListeners();
     }
@@ -20,6 +22,8 @@ class SignalSyncClient {
         this.disconnectBtn.addEventListener('click', () => this.disconnect());
         this.typeFilter.addEventListener('change', () => this.applyFilters());
         this.searchFilter.addEventListener('input', () => this.applyFilters());
+        this.exportJsonBtn.addEventListener('click', () => this.exportData('json'));
+        this.exportCsvBtn.addEventListener('click', () => this.exportData('csv'));
     }
 
     connect() {
@@ -165,6 +169,34 @@ class SignalSyncClient {
 
         const visibleCount = Array.from(this.signalList.children).filter(el => el.style.display !== 'none').length;
         this.log(`Filtered signals: ${visibleCount} of ${this.signals.size} visible`);
+    }
+
+    async exportData(format) {
+        if (!this.isConnected) {
+            this.log('Connect to server first before exporting', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/export/${format}`);
+            if (!response.ok) {
+                throw new Error(`Export failed: ${response.status}`);
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `signals_${new Date().toISOString().split('T')[0]}.${format}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            this.log(`Exported ${this.signals.size} signals to ${format.toUpperCase()}`);
+        } catch (error) {
+            this.log(`Export failed: ${error.message}`, 'error');
+        }
     }
 }
 

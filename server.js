@@ -11,6 +11,76 @@ const signalManager = new SignalManager();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static('public'));
+app.use(express.json());
+
+// API endpoints
+app.get('/api/signals', (req, res) => {
+    res.json({
+        signals: signalManager.getAllSignals(),
+        config: signalManager.config
+    });
+});
+
+app.get('/api/signals/:id', (req, res) => {
+    const signal = signalManager.getSignal(req.params.id);
+    if (signal) {
+        res.json(signal);
+    } else {
+        res.status(404).json({ error: 'Signal not found' });
+    }
+});
+
+app.get('/api/signals/:id/history', (req, res) => {
+    const signal = signalManager.getSignal(req.params.id);
+    if (signal) {
+        res.json({
+            id: signal.id,
+            name: signal.name,
+            history: signal.history
+        });
+    } else {
+        res.status(404).json({ error: 'Signal not found' });
+    }
+});
+
+app.get('/api/export/:format', (req, res) => {
+    const format = req.params.format.toLowerCase();
+    const signals = signalManager.getAllSignals();
+
+    switch (format) {
+        case 'json':
+            res.setHeader('Content-Disposition', 'attachment; filename=signals.json');
+            res.json(signals);
+            break;
+        case 'csv':
+            const csvData = signalsToCsv(signals);
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=signals.csv');
+            res.send(csvData);
+            break;
+        default:
+            res.status(400).json({ error: 'Unsupported format' });
+    }
+});
+
+function signalsToCsv(signals) {
+    const headers = ['id', 'name', 'type', 'value', 'unit', 'lastUpdated'];
+    const rows = [headers.join(',')];
+
+    signals.forEach(signal => {
+        const row = [
+            signal.id,
+            `"${signal.name}"`,
+            signal.type,
+            signal.value,
+            signal.unit,
+            signal.lastUpdated
+        ];
+        rows.push(row.join(','));
+    });
+
+    return rows.join('\n');
+}
 
 wss.on('connection', (ws) => {
     console.log('Client connected');

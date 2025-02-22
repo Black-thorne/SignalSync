@@ -212,3 +212,23 @@ button:disabled {
     border-color: #3498db;
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
+
+.export-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 15px;
+    padding-left: 15px;
+    border-left: 1px solid #ecf0f1;
+}
+
+.export-controls button {
+    background: #27ae60;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    margin-right: 0;
+}
+
+.export-controls button:hover {
+    background: #229954;
+}
